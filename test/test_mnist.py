@@ -90,7 +90,7 @@ def parse_args():
                         help='For Saving the current Model')
     return parser.parse_args()
 
-def getCyclicLRScheduler(args,optimizer, total_num_batches):
+def getOneCycle_Scheduler(args,optimizer, total_num_batches):
     ANNIHILATION_PERCENTAGE = 0.1
     num_annihlation_batches = math.floor(total_num_batches * ANNIHILATION_PERCENTAGE)
     num_batches = total_num_batches - num_annihlation_batches
@@ -138,7 +138,7 @@ def main():
     total_num_batches = (size_of_train_dataset // args.batch_size + 1) * args.epochs
 
     #lets try out this cyclic learning rate and
-    scheduler = getCyclicLRScheduler(args,optimizer, total_num_batches)
+    scheduler = getOneCycle_Scheduler(args,optimizer, total_num_batches)
 
     #or the learning rate finder
     MAX_LR=.5
