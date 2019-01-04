@@ -1,7 +1,20 @@
 import unittest
-from learning_rate_generators import CosignVals,LinearDecrease, LinearIncreaseVals, TriangularVals, ReverseTriangularVals
 
-__project__ = 'Python_tutorials'
+#from commandline in same  directory
+# python -m unittest -v test_sequence_generators
+#in directory above
+# python -m unittest -v test.test_sequence_generators
+# you need __init__.py in test directory
+
+# these test use the parent directory, make sure its there
+import os, sys
+currDir = os.path.dirname(os.path.realpath(__file__))
+rootDir = os.path.abspath(os.path.join(currDir, '..'))
+if rootDir not in sys.path: # add parent dir to paths
+    sys.path.append(rootDir)
+
+from learning_rate_generators import CosignVals, LinearDecrease, LinearIncreaseVals, TriangularVals, \
+            ReverseTriangularVals
 
 NUMB_EVEN_SAMPLES=10
 NUMB_ODD_SAMPLES=9
@@ -69,4 +82,3 @@ class TestReverseTriangular(TBase):
         self.assertAlmostEqual(self.ls[numb_samples - 1], MAX_VAL)
         midval = numb_samples // 2 + numb_samples % 2 - 1
         self.assertAlmostEqual(self.ls[midval], MIN_VAL)  # verify middle
-

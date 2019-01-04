@@ -1,0 +1,10 @@
+{
+  "test_mnist.py::test": true, 
+  "test_sequence_generators.py::T1::test_fail": true, 
+  "test_sequence_generators.py::TestCosign::test_getVals": true, 
+  "test_sequence_generators.py::TestLinear_Decrease::test_getVals": true, 
+  "test_sequence_generators.py::TestLinear_Increase::test_getVals": true, 
+  "test_sequence_generators.py::TestReverseTriangular::test_getVals": true, 
+  "test_sequence_generators.py::TestTriangular::test_getVals": true, 
+  "test_tmp.py::TestStringMethods::test_fail": true
+}

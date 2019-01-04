@@ -2,8 +2,8 @@ from sequence_generators import CosignVals,LinearDecrease,LinearIncreaseVals,Rev
 
 def get1Cycle_LR_and_Momentum(num_batches, numb_annihlation_batches, annihilation_divisor, max_lr, min_lr, max_momentum, min_momentum):
     '''
-    generates LRs as outlined in 'A DISCIPLINED APPROACH TO NEURAL NETWORK HYPER-PARAMETERS: PART 1 –
-    LEARNING RATE, BATCH SIZE, MOMENTUM, AND WEIGHT DECAY'
+    generates LRs as outlined in
+    A DISCIPLINED APPROACH TO NEURAL NETWORK HYPER-PARAMETERS: PART 1 LEARNING RATE, BATCH SIZE, MOMENTUM, AND WEIGHT DECAY
     :param num_batches: how many discrete learning rates in the triangular phase
     :param numb_LR_annihlation_steps: how many discrete learning rates in the annihlation phase
     :param annihilation_divisor: what the minimum learning rate should wind up as

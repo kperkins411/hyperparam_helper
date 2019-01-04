@@ -1,0 +1,4 @@
+{
+  "test/test_mnist.py": true, 
+  "test/test_sequence_generators.py": true
+}

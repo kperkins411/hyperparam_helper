@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
-from cyclic_LR_scheduler import OneCycle_Scheduler
+# from cyclic_LR_scheduler import OneCycle_Scheduler
 import math
 
 class Net(nn.Module):
@@ -133,6 +133,22 @@ def main():
     if (args.save_model):
         torch.save(model.state_dict(), "mnist_cnn.pt")
 
+# if __name__ == '__main__' and __package__ is None:
+#     from os import sys, path
+#     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+#     from cyclic_LR_scheduler import OneCycle_Scheduler
+#     main()
+#
+# if __name__ == '__main__':
+#     main()
 
 if __name__ == '__main__':
+    if __package__ is None:
+        import sys
+        from os import path
+        sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+        from cyclic_LR_scheduler import OneCycle_Scheduler
+    else:
+        from ..cyclic_LR_scheduler import OneCycle_Scheduler
+
     main()
