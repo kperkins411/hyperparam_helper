@@ -68,12 +68,13 @@ def parse_args():
     '''
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
+    parser.add_argument('--epochs', type=int, default=2, metavar='N',
+                        help='number of epochs to train (default: 2)')
+
     parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                         help='input batch size for training (default: 64)')
     parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                         help='input batch size for testing (default: 1000)')
-    parser.add_argument('--epochs', type=int, default=10, metavar='N',
-                        help='number of epochs to train (default: 10)')
     parser.add_argument('--lr', type=float, default=0.01, metavar='LR',
                         help='learning rate (default: 0.01)')
     parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
@@ -89,9 +90,7 @@ def parse_args():
                         help='For Saving the current Model')
     return parser.parse_args()
 
-def getCyclicLRScheduler(args,optimizer, train_loader):
-    size_of_train_dataset = len(train_loader.dataset)
-    total_num_batches = (size_of_train_dataset // args.batch_size + 1) * args.epochs
+def getCyclicLRScheduler(args,optimizer, total_num_batches):
     ANNIHILATION_PERCENTAGE = 0.1
     num_annihlation_batches = math.floor(total_num_batches * ANNIHILATION_PERCENTAGE)
     num_batches = total_num_batches - num_annihlation_batches
@@ -102,8 +101,9 @@ def getCyclicLRScheduler(args,optimizer, train_loader):
                                       min_momentum=(args.momentum-(args.momentum/10)))
     return scheduler
 
-def getLearningRateFinderScheduler(args,optimizer, train_loader, numb_batches):
-    scheduler = LearningRateFinder(optimizer=optimizer,min_lr=args.lr/numb_batches, max_lr=.5, num_batches=numb_batches,
+def getLearningRateFinderScheduler(args,optimizer, numb_batches, min_lr, max_lr):
+
+    scheduler = LearningRateFinder(optimizer=optimizer,min_lr=min_lr, max_lr=max_lr, num_batches=numb_batches,
                                    batch_size=args.batch_size, writer=None)
     return scheduler
 
@@ -134,11 +134,16 @@ def main():
     model = Net().to(device)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
+    size_of_train_dataset = len(train_loader.dataset)
+    total_num_batches = (size_of_train_dataset // args.batch_size + 1) * args.epochs
+
     #lets try out this cyclic learning rate and
-    scheduler = getCyclicLRScheduler(args,optimizer, train_loader)
+    scheduler = getCyclicLRScheduler(args,optimizer, total_num_batches)
 
     #or the learning rate finder
-    # scheduler = getLearningRateFinderScheduler(args, optimizer, train_loader, numb_batches=1000)
+    MAX_LR=.5
+    MIN_LR=.01
+    # scheduler = getLearningRateFinderScheduler(args, optimizer, total_num_batches, min_lr=MIN_LR, max_lr=MAX_LR)
 
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch, scheduler)
