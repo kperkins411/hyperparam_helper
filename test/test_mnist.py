@@ -5,7 +5,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
-# from cyclic_LR_scheduler import OneCycle_Scheduler
 import math
 
 class Net(nn.Module):
@@ -27,7 +26,7 @@ class Net(nn.Module):
         return F.log_softmax(x, dim=1)
 
 
-def train(args, model, device, train_loader, optimizer, epoch, clr_schedule):
+def train(args, model, device, train_loader, optimizer, epoch, scheduler):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
@@ -36,7 +35,7 @@ def train(args, model, device, train_loader, optimizer, epoch, clr_schedule):
         loss = F.nll_loss(output, target)
         loss.backward()
         optimizer.step()
-        # clr_schedule.batch_step()
+        scheduler.batch_step()
 
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
@@ -90,6 +89,24 @@ def parse_args():
                         help='For Saving the current Model')
     return parser.parse_args()
 
+def getCyclicLRScheduler(args,optimizer, train_loader):
+    size_of_train_dataset = len(train_loader.dataset)
+    total_num_batches = (size_of_train_dataset // args.batch_size + 1) * args.epochs
+    ANNIHILATION_PERCENTAGE = 0.1
+    num_annihlation_batches = math.floor(total_num_batches * ANNIHILATION_PERCENTAGE)
+    num_batches = total_num_batches - num_annihlation_batches
+
+    scheduler = OneCycle_Scheduler(optimizer=optimizer, num_batches=num_batches,batch_size = args.batch_size,
+                                      numb_annihlation_batches=num_annihlation_batches, annihilation_divisor=100,
+                                      max_lr=args.lr, min_lr=args.lr/10, max_momentum=args.momentum,
+                                      min_momentum=(args.momentum-(args.momentum/10)))
+    return scheduler
+
+def getLearningRateFinderScheduler(args,optimizer, train_loader, numb_batches):
+    scheduler = LearningRateFinder(optimizer=optimizer,min_lr=args.lr/numb_batches, max_lr=.5, num_batches=numb_batches,
+                                   batch_size=args.batch_size, writer=None)
+    return scheduler
+
 def main():
     args = parse_args()
 
@@ -118,37 +135,25 @@ def main():
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
     #lets try out this cyclic learning rate and
-    size_of_train_dataset = len(train_loader.dataset)
-    total_num_batches = (size_of_train_dataset//args.batch_size + 1) * args.epochs
-    ANNIHILATION_PERCENTAGE = 0.1
-    num_annihlation_batches = math.floor(total_num_batches*ANNIHILATION_PERCENTAGE)
-    num_batches = total_num_batches - num_annihlation_batches
-    clr_schedule = OneCycle_Scheduler(optimizer, num_batches=num_batches, numb_annihlation_batches=num_annihlation_batches, annihilation_divisor=100, max_lr=args.lr,
-                                         min_lr=args.lr/10, max_momentum=args.momentum, min_momentum=(args.momentum-(args.momentum/10)))
+    scheduler = getCyclicLRScheduler(args,optimizer, train_loader)
+
+    #or the learning rate finder
+    # scheduler = getLearningRateFinderScheduler(args, optimizer, train_loader, numb_batches=1000)
 
     for epoch in range(1, args.epochs + 1):
-        train(args, model, device, train_loader, optimizer, epoch, clr_schedule)
+        train(args, model, device, train_loader, optimizer, epoch, scheduler)
         test(args, model, device, test_loader)
 
     if (args.save_model):
         torch.save(model.state_dict(), "mnist_cnn.pt")
-
-# if __name__ == '__main__' and __package__ is None:
-#     from os import sys, path
-#     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-#     from cyclic_LR_scheduler import OneCycle_Scheduler
-#     main()
-#
-# if __name__ == '__main__':
-#     main()
 
 if __name__ == '__main__':
     if __package__ is None:
         import sys
         from os import path
         sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-        from cyclic_LR_scheduler import OneCycle_Scheduler
+        from cyclic_LR_scheduler import OneCycle_Scheduler, LearningRateFinder
     else:
-        from ..cyclic_LR_scheduler import OneCycle_Scheduler
+        from ..cyclic_LR_scheduler import OneCycle_Scheduler, LearningRateFinder
 
     main()

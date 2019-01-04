@@ -43,17 +43,43 @@ class OneCycle_Scheduler(Cyclic_Scheduler):
         #get all that we need
         self.lrs, self.moms= get1Cycle_LR_and_Momentum(num_batches, numb_annihlation_batches, annihilation_divisor,
                                                        max_lr, min_lr, max_momentum, min_momentum)
+        #generator
+        self.getVals = self._get_Vals()
+
     def _get_Vals(self):
         for lr, mom in zip(self.lrs, self.moms):
-            yield lr,mom
+            yield lr, mom
 
     def batch_step(self):
-        lr,mom = next(self._get_Vals())
+        lr,mom = next(self.getVals)
 
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = lr
             param_group['momentum'] = mom
 
+
+class LearningRateFinder(Cyclic_Scheduler):
+    '''
+    generates a list of linearly increasing learning rates
+    use it to find the max and min Learning rates
+    '''
+    def __init__(self, optimizer,*,min_lr, max_lr, num_batches, batch_size = 64, writer =None ):
+        super().__init__(optimizer, min_lr, max_lr, batch_size, writer)
+
+        #now lets change self.lrs to be just Linear_increase
+        li = LinearIncreaseVals()
+        self.lrs = li.getVals( numb_iterations = num_batches, max_val = max_lr, min_val = min_lr)
+
+        # generator
+        self.getVals = self._get_Vals()
+
+    def _get_Vals(self):
+        for lr in self.lrs:
+            yield lr
+    def batch_step(self):
+        lr = next(self.getVals)
+        for param_group in self.optimizer.param_groups:
+            param_group['lr'] = lr
 
 class CyclicLR_Scheduler(Cyclic_Scheduler):
     '''
@@ -155,7 +181,7 @@ if __name__ == '__main__':
     clr_schedule = OneCycle_Scheduler(dummyoptimizer, num_batches=200, numb_annihlation_batches=20, annihilation_divisor=100, max_lr=1,
                                          min_lr=0.1, max_momentum=.99, min_momentum=.7)
     vals = list(clr_schedule._get_Vals())
-    lrs,moms = zip(*vals)
+    lrs, moms = zip(*vals)
 
     plt.xlabel("sample")
     plt.ylabel("learning rate")
