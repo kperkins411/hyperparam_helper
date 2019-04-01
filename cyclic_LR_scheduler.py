@@ -1,5 +1,13 @@
-from sequence_generators import CosignVals,LinearDecrease,LinearIncreaseVals,ReverseTriangularVals,TriangularVals
-from learning_rate_generators import get1Cycle_LR_and_Momentum
+import sys
+parent_module = sys.modules['.'.join(__name__.split('.')[:-1]) or '__main__']
+if __name__ == '__main__' or parent_module.__name__ == '__main__':
+    from sequence_generators import CosignVals, LinearDecrease, LinearIncreaseVals, ReverseTriangularVals, TriangularVals
+    from learning_rate_generators import get1Cycle_LR_and_Momentum
+else:
+    from .sequence_generators import CosignVals, LinearDecrease, LinearIncreaseVals, ReverseTriangularVals, \
+        TriangularVals
+    from .learning_rate_generators import get1Cycle_LR_and_Momentum
+
 '''
 Implementation of 'Cyclical Learning Rates for Training Neural Networks' by Leslie N. Smith
 
@@ -29,10 +37,14 @@ class Cyclic_Scheduler(object):
         self.min_lr = min_lr
         self.max_lr = max_lr;
         self.batch_size = batch_size
+        self.currentLR = min_lr
     def _get_Vals(self):
         raise NotImplementedError
     def batch_step(self):
         raise NotImplementedError
+    def get_currentLR(self):
+        return self.currentLR
+
 
 class OneCycle_Scheduler(Cyclic_Scheduler):
 
@@ -63,8 +75,8 @@ class LearningRateFinder(Cyclic_Scheduler):
     generates a list of linearly increasing learning rates
     use it to find the max and min Learning rates
     '''
-    def __init__(self, optimizer,*,min_lr, max_lr, num_batches, batch_size = 64, writer =None ):
-        super().__init__(optimizer, min_lr, max_lr, batch_size, writer)
+    def __init__(self, optimizer,*,min_lr, max_lr, num_batches,  writer =None ):
+        super().__init__(optimizer, min_lr, max_lr,  writer)
 
         #now lets change self.lrs to be just Linear_increase
         li = LinearIncreaseVals()
@@ -77,9 +89,9 @@ class LearningRateFinder(Cyclic_Scheduler):
         for lr in self.lrs:
             yield lr
     def batch_step(self):
-        lr = next(self.getVals)
+        self.currentLR = next(self.getVals)
         for param_group in self.optimizer.param_groups:
-            param_group['lr'] = lr
+            param_group['lr'] = self.currentLR
 
 class CyclicLR_Scheduler(Cyclic_Scheduler):
     '''
@@ -157,6 +169,7 @@ class CyclicLR_Scheduler(Cyclic_Scheduler):
          self.cur_lr = lr   #used in learning rate finder
 
 import matplotlib.pyplot as plt
+
 
 if __name__ == '__main__':
     dummyoptimizer = 3  #bogus for class

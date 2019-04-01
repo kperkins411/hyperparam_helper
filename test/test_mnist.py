@@ -104,7 +104,7 @@ def getOneCycle_Scheduler(args,optimizer, total_num_batches):
 def getLearningRateFinderScheduler(args,optimizer, numb_batches, min_lr, max_lr):
 
     scheduler = LearningRateFinder(optimizer=optimizer,min_lr=min_lr, max_lr=max_lr, num_batches=numb_batches,
-                                   batch_size=args.batch_size, writer=None)
+                                    writer=None)
     return scheduler
 
 def main():
@@ -143,7 +143,7 @@ def main():
     #or the learning rate finder
     MAX_LR=.5
     MIN_LR=.01
-    # scheduler = getLearningRateFinderScheduler(args, optimizer, total_num_batches, min_lr=MIN_LR, max_lr=MAX_LR)
+    scheduler = getLearningRateFinderScheduler(args, optimizer, total_num_batches, min_lr=MIN_LR, max_lr=MAX_LR)
 
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch, scheduler)

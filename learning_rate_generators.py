@@ -1,4 +1,12 @@
-from sequence_generators import CosignVals,LinearDecrease,LinearIncreaseVals,ReverseTriangularVals,TriangularVals
+import sys
+parent_module = sys.modules['.'.join(__name__.split('.')[:-1]) or '__main__']
+if __name__ == '__main__' or parent_module.__name__ == '__main__':
+    from sequence_generators import CosignVals,LinearDecrease,LinearIncreaseVals,ReverseTriangularVals,TriangularVals
+else:
+    from .sequence_generators import CosignVals,LinearDecrease,LinearIncreaseVals,ReverseTriangularVals,TriangularVals
+
+
+
 
 def get1Cycle_LR_and_Momentum(num_batches, numb_annihlation_batches, annihilation_divisor, max_lr, min_lr, max_momentum, min_momentum):
     '''

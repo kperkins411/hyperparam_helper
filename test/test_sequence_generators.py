@@ -13,7 +13,7 @@ rootDir = os.path.abspath(os.path.join(currDir, '..'))
 if rootDir not in sys.path: # add parent dir to paths
     sys.path.append(rootDir)
 
-from learning_rate_generators import CosignVals, LinearDecrease, LinearIncreaseVals, TriangularVals, \
+from  learning_rate_generators import CosignVals, LinearDecrease, LinearIncreaseVals, TriangularVals, \
             ReverseTriangularVals
 
 NUMB_EVEN_SAMPLES=10
